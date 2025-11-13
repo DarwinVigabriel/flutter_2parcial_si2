@@ -16,6 +16,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
   final _barcodeController = TextEditingController();
   late MobileScannerController cameraController;
   bool _manualMode = false;
+  bool _processingBarcode = false; // Evitar múltiples detecciones
 
   @override
   void initState() {
@@ -31,11 +32,26 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
   }
 
   void _handleBarcode(String barcode) async {
-    final productProvider = context.read<ProductProvider>();
-    final success = await productProvider.lookupByBarcode(barcode);
+    // Evitar múltiples detecciones simultáneas
+    if (_processingBarcode) return;
+    _processingBarcode = true;
 
-    if (success && mounted) {
-      _showProductDialog();
+    try {
+      final productProvider = context.read<ProductProvider>();
+      final success = await productProvider.lookupByBarcode(barcode);
+
+      if (success && mounted) {
+        // Pausar la cámara antes de mostrar el diálogo
+        try {
+          await cameraController.stop();
+        } catch (e) {
+          // Ignorar errores al pausar la cámara
+          print('Error al pausar cámara: $e');
+        }
+        _showProductDialog();
+      }
+    } finally {
+      _processingBarcode = false;
     }
   }
 
@@ -44,149 +60,239 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
     if (product == null) return;
 
     int quantity = 1;
+    final screenContext = context; // Guardar el contexto de la pantalla
 
     showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: Text('Producto Escaneado'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                height: 100,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: AppColors.primaryLight,
-                  borderRadius: BorderRadius.circular(8),
+      context: screenContext,
+      barrierDismissible: true,
+      builder: (BuildContext dialogContext) {
+        return StatefulBuilder(
+          builder: (BuildContext statefulContext, StateSetter setState) {
+            return Dialog(
+              insetPadding: EdgeInsets.all(16),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(statefulContext).size.height * 0.8,
                 ),
-                child: Icon(
-                  Icons.image_not_supported,
-                  color: AppColors.primary,
-                  size: 40,
-                ),
-              ),
-              SizedBox(height: 16),
-              Text(
-                product.nombre,
-                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-              ),
-              SizedBox(height: 8),
-              Text(
-                'SKU: ${product.sku}',
-                style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
-              ),
-              Text(
-                'Código: ${product.codigoBarras}',
-                style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
-              ),
-              SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Precio: \$${product.precioVenta}',
-                        style: TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                      Text(
-                        'Stock: ${product.stockActual}',
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Text(
+                        'Producto Escaneado',
                         style: TextStyle(
-                          color: product.hasStock
-                              ? AppColors.success
-                              : AppColors.error,
+                          fontSize: 18,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                    ],
-                  ),
-                  Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(color: AppColors.border),
-                      borderRadius: BorderRadius.circular(4),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        GestureDetector(
-                          onTap: quantity > 1
-                              ? () => setState(() => quantity--)
-                              : null,
-                          child: Icon(
-                            Icons.remove,
-                            size: 16,
-                            color: quantity > 1
-                                ? AppColors.secondary
-                                : AppColors.border,
+                    Flexible(
+                      child: SingleChildScrollView(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                height: 80,
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  color: AppColors.primaryLight,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Icon(
+                                  Icons.image_not_supported,
+                                  color: AppColors.primary,
+                                  size: 40,
+                                ),
+                              ),
+                              SizedBox(height: 16),
+                              Text(
+                                product.nombre,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                'SKU: ${product.sku}',
+                                style: TextStyle(
+                                  color: AppColors.textSecondary,
+                                  fontSize: 12,
+                                ),
+                              ),
+                              Text(
+                                'Código: ${product.codigoBarras}',
+                                style: TextStyle(
+                                  color: AppColors.textSecondary,
+                                  fontSize: 12,
+                                ),
+                              ),
+                              SizedBox(height: 16),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Precio: \$${product.precioVenta}',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      Text(
+                                        'Stock: ${product.stockActual}',
+                                        style: TextStyle(
+                                          color: product.hasStock
+                                              ? AppColors.success
+                                              : AppColors.error,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                        color: AppColors.border,
+                                      ),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        GestureDetector(
+                                          onTap: quantity > 1
+                                              ? () => setState(() => quantity--)
+                                              : null,
+                                          child: Icon(
+                                            Icons.remove,
+                                            size: 16,
+                                            color: quantity > 1
+                                                ? AppColors.secondary
+                                                : AppColors.border,
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          width: 30,
+                                          child: Center(
+                                            child: Text(quantity.toString()),
+                                          ),
+                                        ),
+                                        GestureDetector(
+                                          onTap: quantity < product.stockActual
+                                              ? () => setState(() => quantity++)
+                                              : null,
+                                          child: Icon(
+                                            Icons.add,
+                                            size: 16,
+                                            color:
+                                                quantity < product.stockActual
+                                                ? AppColors.secondary
+                                                : AppColors.border,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                         ),
-                        SizedBox(
-                          width: 30,
-                          child: Center(child: Text(quantity.toString())),
-                        ),
-                        GestureDetector(
-                          onTap: quantity < product.stockActual
-                              ? () => setState(() => quantity++)
-                              : null,
-                          child: Icon(
-                            Icons.add,
-                            size: 16,
-                            color: quantity < product.stockActual
-                                ? AppColors.secondary
-                                : AppColors.border,
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                _barcodeController.clear();
-                context.read<ProductProvider>().clearSelected();
-              },
-              child: Text('Cancelar'),
-            ),
-            ElevatedButton(
-              onPressed: product.hasStock
-                  ? () async {
-                      final cartProvider = context.read<CartProvider>();
-                      final success = await cartProvider.addItem(
-                        product.id,
-                        quantity,
-                      );
-                      if (success && context.mounted) {
-                        Navigator.pop(context);
-                        _barcodeController.clear();
-                        context.read<ProductProvider>().clearSelected();
+                    Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pop(screenContext);
+                              _barcodeController.clear();
+                              screenContext
+                                  .read<ProductProvider>()
+                                  .clearSelected();
+                              // Reanudar la cámara al cancelar
+                              try {
+                                if (mounted) {
+                                  cameraController.start();
+                                }
+                              } catch (e) {
+                                print('Error al reanudar cámara: $e');
+                              }
+                            },
+                            child: Text('Cancelar'),
+                          ),
+                          SizedBox(width: 8),
+                          ElevatedButton(
+                            onPressed: product.hasStock
+                                ? () async {
+                                    // Cerrar dialog primero
+                                    Navigator.pop(dialogContext);
 
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Producto agregado al carrito'),
-                            backgroundColor: AppColors.success,
+                                    // Limpiar después del pop
+                                    _barcodeController.clear();
+                                    screenContext
+                                        .read<ProductProvider>()
+                                        .clearSelected();
+
+                                    // Agregar al carrito
+                                    final cartProvider = screenContext
+                                        .read<CartProvider>();
+                                    await cartProvider.addItem(
+                                      product.id,
+                                      quantity,
+                                    );
+
+                                    // Mostrar snackbar
+                                    if (mounted) {
+                                      ScaffoldMessenger.of(
+                                        screenContext,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            'Producto agregado al carrito',
+                                          ),
+                                          backgroundColor: AppColors.success,
+                                        ),
+                                      );
+                                    }
+
+                                    // Reanudar la cámara después de agregar
+                                    try {
+                                      if (mounted) {
+                                        await cameraController.start();
+                                      }
+                                    } catch (e) {
+                                      print('Error al reanudar cámara: $e');
+                                    }
+                                  }
+                                : null,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: product.hasStock
+                                  ? AppColors.primary
+                                  : AppColors.border,
+                            ),
+                            child: Text('Agregar al Carrito'),
                           ),
-                        );
-                      }
-                    }
-                  : null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: product.hasStock
-                    ? AppColors.primary
-                    : AppColors.border,
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              child: Text('Agregar al Carrito'),
-            ),
-          ],
-        ),
-      ),
+            );
+          },
+        );
+      },
     );
   }
 

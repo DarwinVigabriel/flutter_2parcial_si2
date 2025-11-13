@@ -184,7 +184,7 @@ class _ProductCard extends StatelessWidget {
             // Product Info
             Flexible(
               child: Padding(
-                padding: EdgeInsets.fromLTRB(5, 0, 5, 0),
+                padding: EdgeInsets.all(8),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
@@ -195,47 +195,54 @@ class _ProductCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
-                        fontSize: 12,
+                        fontSize: 11,
                         color: AppColors.textPrimary,
                       ),
                     ),
-                    SizedBox(height: 2),
+                    SizedBox(height: 0),
                     Text(
                       'SKU: ${product.sku}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        fontSize: 11,
+                        fontSize: 10,
                         color: AppColors.textSecondary,
                       ),
                     ),
-                    SizedBox(height: 4),
+                    SizedBox(height: 2),
 
                     // Price and Stock
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          '\$${product.precioVenta}',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.primary,
-                            fontSize: 16,
+                        Flexible(
+                          child: Text(
+                            '\$${product.precioVenta}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.primary,
+                              fontSize: 14,
+                            ),
                           ),
                         ),
+                        SizedBox(width: 4),
                         Container(
                           padding: EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 3,
+                            horizontal: 4,
+                            vertical: 2,
                           ),
                           decoration: BoxDecoration(
                             color: product.hasStock
                                 ? AppColors.success.withOpacity(0.1)
                                 : AppColors.error.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(4),
+                            borderRadius: BorderRadius.circular(3),
                           ),
                           child: Text(
                             '${product.stockActual}',
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: 10,
                               color: product.hasStock
                                   ? AppColors.success
                                   : AppColors.error,
@@ -247,10 +254,10 @@ class _ProductCard extends StatelessWidget {
                     ),
 
                     // Add to Cart Button
-                    SizedBox(height: 0),
+                    SizedBox(height: 2),
                     SizedBox(
                       width: double.infinity,
-                      height: 34,
+                      height: 30,
                       child: ElevatedButton(
                         onPressed: product.hasStock
                             ? () {
@@ -267,7 +274,7 @@ class _ProductCard extends StatelessWidget {
                         child: Text(
                           'Agregar',
                           style: TextStyle(
-                            fontSize: 15,
+                            fontSize: 13,
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
                           ),
