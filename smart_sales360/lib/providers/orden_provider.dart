@@ -25,6 +25,12 @@ class OrdenProvider with ChangeNotifier {
   bool get cargando => _cargando;
   String? get error => _error;
 
+  // Setters
+  set ordenSeleccionada(Map<String, dynamic>? orden) {
+    _ordenSeleccionada = orden;
+    notifyListeners();
+  }
+
   /// CU17: Crear orden desde carrito
   Future<bool> crearOrden(String carritoId) async {
     _cargando = true;

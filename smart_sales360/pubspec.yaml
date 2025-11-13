@@ -52,6 +52,12 @@ dependencies:
   
   # Database
   sqflite: ^2.3.0
+  
+  # Stripe Payment
+  flutter_stripe: ^9.4.0
+  
+  # WebView for Stripe Checkout
+  webview_flutter: ^4.4.0
 
 dev_dependencies:
   flutter_test:

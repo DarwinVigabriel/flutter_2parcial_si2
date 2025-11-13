@@ -21,7 +21,9 @@ class _HistorialOrdenesScreenState extends State<HistorialOrdenesScreen> {
   }
 
   Future<void> _cargarOrdenes() async {
-    String? estado = _estadoSeleccionado == 'todos' ? null : _estadoSeleccionado;
+    String? estado = _estadoSeleccionado == 'todos'
+        ? null
+        : _estadoSeleccionado;
     await _ordenProvider.cargarOrdenes(estado: estado);
   }
 
@@ -62,7 +64,11 @@ class _HistorialOrdenesScreenState extends State<HistorialOrdenesScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.shopping_bag_outlined, size: 64, color: Colors.grey),
+                  Icon(
+                    Icons.shopping_bag_outlined,
+                    size: 64,
+                    color: Colors.grey,
+                  ),
                   const SizedBox(height: 16),
                   const Text('No hay órdenes'),
                   const SizedBox(height: 16),
@@ -149,7 +155,10 @@ class _HistorialOrdenesScreenState extends State<HistorialOrdenesScreen> {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: color.withOpacity(0.1),
                     border: Border.all(color: color),
@@ -229,9 +238,18 @@ class _HistorialOrdenesScreenState extends State<HistorialOrdenesScreen> {
               width: double.infinity,
               child: OutlinedButton(
                 onPressed: () {
-                  // Aquí iría la navegación a pantalla de detalles
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Detalles de ${orden['numero_orden']}')),
+                  // Establecer la orden seleccionada en el provider
+                  final ordenProvider = Provider.of<OrdenProvider>(
+                    context,
+                    listen: false,
+                  );
+                  ordenProvider.ordenSeleccionada = orden;
+
+                  // Navegar a la pantalla de detalles
+                  Navigator.pushNamed(
+                    context,
+                    '/orden-detail',
+                    arguments: orden['id']?.toString() ?? '',
                   );
                 },
                 child: const Text('Ver Detalles'),

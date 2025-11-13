@@ -2,15 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/orden_provider.dart';
 import '../providers/cart_provider.dart';
-import '../utils/app_colors.dart';
+import '../config/app_colors.dart';
 
 class CheckoutScreen extends StatefulWidget {
   final String carritoId;
 
-  const CheckoutScreen({
-    Key? key,
-    required this.carritoId,
-  }) : super(key: key);
+  const CheckoutScreen({Key? key, required this.carritoId}) : super(key: key);
 
   @override
   State<CheckoutScreen> createState() => _CheckoutScreenState();
@@ -31,9 +28,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Future<void> _crearOrden() async {
     final exitoso = await _ordenProvider.crearOrden(widget.carritoId);
     if (!exitoso && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${_ordenProvider.error}')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: ${_ordenProvider.error}')));
     }
   }
 
@@ -150,7 +147,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: 12),
-                if (orden['items'] != null && (orden['items'] as List).isNotEmpty)
+                if (orden['items'] != null &&
+                    (orden['items'] as List).isNotEmpty)
                   ListView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
@@ -188,8 +186,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      item['producto_detail']?['nombre'] ?? 'Producto',
-                                      style: const TextStyle(fontWeight: FontWeight.bold),
+                                      item['producto_detail']?['nombre'] ??
+                                          'Producto',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                     const SizedBox(height: 4),
@@ -207,7 +208,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                               // Subtotal
                               Text(
                                 '\$${item['subtotal']}',
-                                style: const TextStyle(fontWeight: FontWeight.bold),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ],
                           ),
@@ -263,10 +266,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     ),
                     child: const Text(
                       'Cancelar',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: AppColors.primary,
-                      ),
+                      style: TextStyle(fontSize: 16, color: AppColors.primary),
                     ),
                   ),
                 ),
@@ -295,7 +295,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(dialogContext);
-              
+
               // Aquí iría la integración con Stripe
               // Por ahora, confirmamos el pago manualmente
               final exitoso = await _ordenProvider.confirmarPago(
@@ -314,9 +314,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 }
               }
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
             child: const Text('Confirmar'),
           ),
         ],

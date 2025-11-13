@@ -141,10 +141,7 @@ class _NotificacionesScreenState extends State<NotificacionesScreen> {
                       const SizedBox(height: 2),
                       Text(
                         _formatearFecha(fecha),
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.grey[600],
-                        ),
+                        style: TextStyle(fontSize: 11, color: Colors.grey[600]),
                       ),
                     ],
                   ),
@@ -166,10 +163,7 @@ class _NotificacionesScreenState extends State<NotificacionesScreen> {
             // Mensaje
             Text(
               mensaje,
-              style: TextStyle(
-                fontSize: 13,
-                color: Colors.grey[700],
-              ),
+              style: TextStyle(fontSize: 13, color: Colors.grey[700]),
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
             ),
@@ -192,10 +186,7 @@ class _NotificacionesScreenState extends State<NotificacionesScreen> {
                 else
                   const Text(
                     'Leída',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey,
-                    ),
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
                   ),
               ],
             ),
@@ -267,7 +258,9 @@ class _NotificacionesScreenState extends State<NotificacionesScreen> {
       context: context,
       builder: (BuildContext dialogContext) => AlertDialog(
         title: const Text('Limpiar Notificaciones'),
-        content: const Text('¿Estás seguro de que deseas eliminar todas las notificaciones leídas?'),
+        content: const Text(
+          '¿Estás seguro de que deseas eliminar todas las notificaciones leídas?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
@@ -281,9 +274,7 @@ class _NotificacionesScreenState extends State<NotificacionesScreen> {
                 const SnackBar(content: Text('Notificaciones eliminadas')),
               );
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('Eliminar'),
           ),
         ],

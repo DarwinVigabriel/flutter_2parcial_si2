@@ -8,11 +8,17 @@ import 'services/storage_service.dart';
 import 'providers/auth_provider.dart';
 import 'providers/product_provider.dart';
 import 'providers/cart_provider.dart';
+import 'providers/orden_provider.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/products_screen.dart';
 import 'screens/cart_screen.dart';
 import 'screens/qr_scanner_screen.dart';
+import 'screens/checkout_screen.dart';
+import 'screens/historial_ordenes_screen.dart';
+import 'screens/dashboard_screen.dart';
+import 'screens/notificaciones_screen.dart';
+import 'screens/orden_detail_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,6 +44,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => ProductProvider()),
         ChangeNotifierProvider(create: (_) => CartProvider()),
+        ChangeNotifierProvider(create: (_) => OrdenProvider()),
       ],
       child: MaterialApp(
         title: 'Smart Sales 360',
@@ -55,6 +62,17 @@ class MyApp extends StatelessWidget {
           '/products': (context) => ProductsScreen(),
           '/cart': (context) => CartScreen(),
           '/qr_scanner': (context) => QRScannerScreen(),
+          '/checkout': (context) => CheckoutScreen(
+            carritoId:
+                ModalRoute.of(context)?.settings.arguments as String? ?? '',
+          ),
+          '/historial-ordenes': (context) => HistorialOrdenesScreen(),
+          '/dashboard': (context) => DashboardScreen(),
+          '/notificaciones': (context) => NotificacionesScreen(),
+          '/orden-detail': (context) => OrdenDetailScreen(
+            ordenId:
+                ModalRoute.of(context)?.settings.arguments as String? ?? '',
+          ),
         },
         onGenerateRoute: (settings) {
           if (settings.name == '/product_detail') {

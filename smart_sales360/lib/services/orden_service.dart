@@ -106,10 +106,7 @@ class OrdenService {
         url += '?${Uri(queryParameters: params).query}';
       }
 
-      final response = await http.get(
-        Uri.parse(url),
-        headers: headers,
-      );
+      final response = await http.get(Uri.parse(url), headers: headers);
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
@@ -133,7 +130,9 @@ class OrdenService {
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
       } else {
-        throw Exception('Error al obtener estadísticas: ${response.statusCode}');
+        throw Exception(
+          'Error al obtener estadísticas: ${response.statusCode}',
+        );
       }
     } catch (e) {
       throw Exception('Error en obtenerEstadisticas: $e');
@@ -152,7 +151,9 @@ class OrdenService {
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
       } else {
-        throw Exception('Error al obtener órdenes por estado: ${response.statusCode}');
+        throw Exception(
+          'Error al obtener órdenes por estado: ${response.statusCode}',
+        );
       }
     } catch (e) {
       throw Exception('Error en obtenerOrdenesPorEstado: $e');
@@ -190,7 +191,9 @@ class OrdenService {
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
       } else {
-        throw Exception('Error al obtener últimas compras: ${response.statusCode}');
+        throw Exception(
+          'Error al obtener últimas compras: ${response.statusCode}',
+        );
       }
     } catch (e) {
       throw Exception('Error en obtenerUltimasCompras: $e');
@@ -209,7 +212,9 @@ class OrdenService {
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
       } else {
-        throw Exception('Error al obtener estadísticas: ${response.statusCode}');
+        throw Exception(
+          'Error al obtener estadísticas: ${response.statusCode}',
+        );
       }
     } catch (e) {
       throw Exception('Error en obtenerEstadisticasDashboard: $e');
@@ -247,7 +252,9 @@ class OrdenService {
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
       } else {
-        throw Exception('Error al listar notificaciones: ${response.statusCode}');
+        throw Exception(
+          'Error al listar notificaciones: ${response.statusCode}',
+        );
       }
     } catch (e) {
       throw Exception('Error en listarNotificaciones: $e');
@@ -266,7 +273,9 @@ class OrdenService {
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
       } else {
-        throw Exception('Error al obtener notificaciones sin leer: ${response.statusCode}');
+        throw Exception(
+          'Error al obtener notificaciones sin leer: ${response.statusCode}',
+        );
       }
     } catch (e) {
       throw Exception('Error en obtenerNotificacionesSinLeer: $e');
@@ -274,11 +283,15 @@ class OrdenService {
   }
 
   /// CU20: Marcar notificación como entregada
-  Future<Map<String, dynamic>> marcarNotificacionEntregada(int notificacionId) async {
+  Future<Map<String, dynamic>> marcarNotificacionEntregada(
+    int notificacionId,
+  ) async {
     try {
       final headers = await getHeaders();
       final response = await http.post(
-        Uri.parse('$baseUrl/notificaciones-push/$notificacionId/marcar-entregada/'),
+        Uri.parse(
+          '$baseUrl/notificaciones-push/$notificacionId/marcar-entregada/',
+        ),
         headers: headers,
       );
 
@@ -304,7 +317,9 @@ class OrdenService {
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
       } else {
-        throw Exception('Error al limpiar notificaciones: ${response.statusCode}');
+        throw Exception(
+          'Error al limpiar notificaciones: ${response.statusCode}',
+        );
       }
     } catch (e) {
       throw Exception('Error en limpiarNotificacionesLeidas: $e');
