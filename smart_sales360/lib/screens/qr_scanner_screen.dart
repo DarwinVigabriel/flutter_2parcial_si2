@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import '../config/app_colors.dart';
 import '../providers/product_provider.dart';
 import '../providers/cart_provider.dart';
@@ -13,10 +14,19 @@ class QRScannerScreen extends StatefulWidget {
 
 class _QRScannerScreenState extends State<QRScannerScreen> {
   final _barcodeController = TextEditingController();
+  late MobileScannerController cameraController;
+  bool _manualMode = false;
+
+  @override
+  void initState() {
+    super.initState();
+    cameraController = MobileScannerController();
+  }
 
   @override
   void dispose() {
     _barcodeController.dispose();
+    cameraController.dispose();
     super.dispose();
   }
 
@@ -184,164 +194,171 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(title: Text('Escanear Código'), elevation: 1),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // QR Camera Placeholder (para desarrollo)
-            Container(
-              width: double.infinity,
-              height: 300,
-              decoration: BoxDecoration(
-                border: Border.all(color: AppColors.border, width: 2),
-                borderRadius: BorderRadius.circular(12),
-                color: AppColors.primaryLight,
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.qr_code_2, size: 80, color: AppColors.primary),
-                  SizedBox(height: 16),
-                  Text(
-                    'Cámara QR',
-                    style: TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 16,
+      appBar: AppBar(
+        title: Text('Escanear Código'),
+        elevation: 1,
+        actions: [
+          IconButton(
+            icon: Icon(_manualMode ? Icons.qr_code_scanner : Icons.edit),
+            onPressed: () {
+              setState(() => _manualMode = !_manualMode);
+            },
+          ),
+        ],
+      ),
+      body: _manualMode ? _buildManualInput() : _buildCameraView(),
+    );
+  }
+
+  Widget _buildCameraView() {
+    return Column(
+      children: [
+        Expanded(
+          flex: 4,
+          child: MobileScanner(
+            controller: cameraController,
+            onDetect: (capture) {
+              final List<Barcode> barcodes = capture.barcodes;
+              if (barcodes.isNotEmpty) {
+                final barcode = barcodes.first.rawValue;
+                if (barcode != null) {
+                  _handleBarcode(barcode);
+                }
+              }
+            },
+            errorBuilder: (context, error, child) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.error_outline, color: AppColors.error, size: 48),
+                    SizedBox(height: 16),
+                    Text(
+                      'Error al acceder a la cámara',
+                      style: TextStyle(color: AppColors.error, fontSize: 16),
                     ),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Apunta a un código de barras',
-                    style: TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 12,
+                    SizedBox(height: 8),
+                    Text(
+                      error.toString(),
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 12,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+        Container(
+          color: Colors.black87,
+          padding: EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.info, color: Colors.white, size: 20),
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Apunta a un código de barras para escanearlo',
+                      style: TextStyle(color: Colors.white, fontSize: 14),
                     ),
                   ),
                 ],
               ),
-            ),
-            SizedBox(height: 24),
-
-            // Manual Input
-            Text(
-              'O ingresa el código manualmente:',
-              style: TextStyle(fontWeight: FontWeight.w600),
-            ),
-            SizedBox(height: 12),
-            TextField(
-              controller: _barcodeController,
-              decoration: InputDecoration(
-                hintText: 'Código de barras...',
-                prefixIcon: Icon(
-                  Icons.barcode_reader,
-                  color: AppColors.secondary,
-                ),
-                suffixIcon: _barcodeController.text.isNotEmpty
-                    ? IconButton(
-                        icon: Icon(Icons.clear),
-                        onPressed: () {
-                          _barcodeController.clear();
-                        },
-                      )
-                    : null,
-              ),
-              onChanged: (value) {
-                setState(() {});
-              },
-              onSubmitted: (value) {
-                if (value.isNotEmpty) {
-                  _handleBarcode(value);
-                }
-              },
-            ),
-            SizedBox(height: 16),
-
-            // Search Button
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: _barcodeController.text.isNotEmpty
-                    ? () => _handleBarcode(_barcodeController.text)
-                    : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                ),
-                child: Icon(Icons.search, color: Colors.white),
-              ),
-            ),
-            SizedBox(height: 24),
-
-            // Error Message
-            Consumer<ProductProvider>(
-              builder: (context, provider, _) {
-                if (provider.error != null) {
-                  return Container(
-                    padding: EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AppColors.error.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: AppColors.error),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.error_outline, color: AppColors.error),
-                        SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            provider.error!,
-                            style: TextStyle(color: AppColors.error),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-                return SizedBox();
-              },
-            ),
-
-            // Info Section
-            SizedBox(height: 24),
-            Text(
-              'Consejos:',
-              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-            ),
-            SizedBox(height: 12),
-            _buildTip(
-              Icons.info_outline,
-              'Asegúrate que la cámara pueda ver el código claramente',
-            ),
-            SizedBox(height: 8),
-            _buildTip(
-              Icons.info_outline,
-              'Puedes ingresar el código manualmente si el escaneo falla',
-            ),
-            SizedBox(height: 8),
-            _buildTip(
-              Icons.info_outline,
-              'El producto se agregará a tu carrito automáticamente',
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTip(IconData icon, String text) {
-    return Row(
-      children: [
-        Icon(icon, size: 16, color: AppColors.secondary),
-        SizedBox(width: 12),
-        Expanded(
-          child: Text(
-            text,
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+            ],
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildManualInput() {
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Ingresa el código manualmente:',
+            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+          ),
+          SizedBox(height: 16),
+          TextField(
+            controller: _barcodeController,
+            decoration: InputDecoration(
+              hintText: 'Código de barras...',
+              prefixIcon: Icon(
+                Icons.barcode_reader,
+                color: AppColors.secondary,
+              ),
+              suffixIcon: _barcodeController.text.isNotEmpty
+                  ? IconButton(
+                      icon: Icon(Icons.clear),
+                      onPressed: () {
+                        _barcodeController.clear();
+                        setState(() {});
+                      },
+                    )
+                  : null,
+            ),
+            onChanged: (value) {
+              setState(() {});
+            },
+            onSubmitted: (value) {
+              if (value.isNotEmpty) {
+                _handleBarcode(value);
+              }
+            },
+          ),
+          SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: ElevatedButton(
+              onPressed: _barcodeController.text.isNotEmpty
+                  ? () => _handleBarcode(_barcodeController.text)
+                  : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+              ),
+              child: Icon(Icons.search, color: Colors.white),
+            ),
+          ),
+          SizedBox(height: 24),
+          Consumer<ProductProvider>(
+            builder: (context, provider, _) {
+              if (provider.error != null) {
+                return Container(
+                  padding: EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.error.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: AppColors.error),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.error_outline, color: AppColors.error),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          provider.error!,
+                          style: TextStyle(color: AppColors.error),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+              return SizedBox();
+            },
+          ),
+        ],
+      ),
     );
   }
 }

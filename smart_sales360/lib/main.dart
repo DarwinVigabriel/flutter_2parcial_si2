@@ -56,6 +56,16 @@ class MyApp extends StatelessWidget {
           '/cart': (context) => CartScreen(),
           '/qr_scanner': (context) => QRScannerScreen(),
         },
+        onGenerateRoute: (settings) {
+          if (settings.name == '/product_detail') {
+            // Por ahora, retorna ProductsScreen. Aquí irá la pantalla de detalles cuando exista.
+            return MaterialPageRoute(
+              builder: (context) => ProductsScreen(),
+              settings: settings,
+            );
+          }
+          return null;
+        },
         debugShowCheckedModeBanner: false,
       ),
     );

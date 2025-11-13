@@ -14,21 +14,30 @@ class CartItem {
   });
 
   factory CartItem.fromJson(Map<String, dynamic> json) {
-    return CartItem(
-      id: json['id'] ?? 0,
-      product: Product.fromJson({
-        'id': json['producto_id'],
-        'nombre': json['nombre_producto'],
-        'sku': '',
+    // Parsear el producto desde producto_detail (backend lo envía así)
+    Product product;
+    if (json['producto_detail'] != null) {
+      product = Product.fromJson(json['producto_detail']);
+    } else {
+      // Fallback si producto_detail no existe
+      product = Product.fromJson({
+        'id': json['producto'] ?? 0,
+        'nombre': json['nombre_producto'] ?? 'Producto',
+        'sku': json['sku'] ?? '',
         'codigo_barras': '',
         'descripcion': '',
         'categoria_id': 0,
         'precio_costo': '0',
-        'precio_venta': json['price'],
+        'precio_venta': json['price'] ?? '0',
         'stock_actual': 0,
         'stock_minimo': 0,
         'activo': true,
-      }),
+      });
+    }
+
+    return CartItem(
+      id: json['id'] ?? 0,
+      product: product,
       quantity: json['quantity'] ?? 1,
       price: json['price']?.toString() ?? '0.00',
     );

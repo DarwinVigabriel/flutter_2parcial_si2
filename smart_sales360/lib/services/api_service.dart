@@ -148,7 +148,7 @@ class ApiService {
           .post(
             Uri.parse(url),
             headers: headers,
-            body: jsonEncode({'producto_id': productId, 'quantity': quantity}),
+            body: jsonEncode({'producto': productId, 'quantity': quantity}),
           )
           .timeout(ApiConfig.connectionTimeout);
 

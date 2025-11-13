@@ -1,7 +1,6 @@
 class ApiConfig {
   // Cambiar según el ambiente
-  static const String baseUrl = 'https://backend2parcialsi2-production.up.railway.app'; // Producción Railway
-  // static const String baseUrl = 'http://192.168.0.4:8000'; // Desarrollo local
+  static const String baseUrl = 'http://192.168.0.4:8000'; // Desarrollo local
 
   // Endpoints
   static const String authLogin = '/api/auth/login/';

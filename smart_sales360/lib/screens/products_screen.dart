@@ -20,6 +20,11 @@ class _ProductsScreenState extends State<ProductsScreen> {
     super.initState();
     Future.microtask(() {
       context.read<ProductProvider>().fetchProducts();
+      // CU9: Crear carrito si no existe
+      final cartProvider = context.read<CartProvider>();
+      if (!cartProvider.hasCart) {
+        cartProvider.createCart();
+      }
     });
   }
 
@@ -177,23 +182,24 @@ class _ProductCard extends StatelessWidget {
             ),
 
             // Product Info
-            Expanded(
+            Flexible(
               child: Padding(
-                padding: EdgeInsets.all(12),
+                padding: EdgeInsets.fromLTRB(5, 0, 5, 0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       product.nombre,
-                      maxLines: 2,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
-                        fontSize: 14,
+                        fontSize: 12,
                         color: AppColors.textPrimary,
                       ),
                     ),
-                    SizedBox(height: 4),
+                    SizedBox(height: 2),
                     Text(
                       'SKU: ${product.sku}',
                       style: TextStyle(
@@ -201,7 +207,7 @@ class _ProductCard extends StatelessWidget {
                         color: AppColors.textSecondary,
                       ),
                     ),
-                    Spacer(),
+                    SizedBox(height: 4),
 
                     // Price and Stock
                     Row(
@@ -217,8 +223,8 @@ class _ProductCard extends StatelessWidget {
                         ),
                         Container(
                           padding: EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
+                            horizontal: 6,
+                            vertical: 3,
                           ),
                           decoration: BoxDecoration(
                             color: product.hasStock
@@ -241,10 +247,10 @@ class _ProductCard extends StatelessWidget {
                     ),
 
                     // Add to Cart Button
-                    SizedBox(height: 8),
+                    SizedBox(height: 0),
                     SizedBox(
                       width: double.infinity,
-                      height: 32,
+                      height: 34,
                       child: ElevatedButton(
                         onPressed: product.hasStock
                             ? () {
@@ -254,8 +260,18 @@ class _ProductCard extends StatelessWidget {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
                           disabledBackgroundColor: AppColors.border,
+                          foregroundColor: Colors.white,
+                          alignment: Alignment.center,
+                          padding: EdgeInsets.zero,
                         ),
-                        child: Text('Agregar', style: TextStyle(fontSize: 12)),
+                        child: Text(
+                          'Agregar',
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ),
                   ],
